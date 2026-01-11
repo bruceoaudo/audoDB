@@ -2,14 +2,23 @@ const express = require("express");
 const http = require("http");
 const AudoDB = require("audodb");
 const dotenv = require("dotenv");
+const path = require("node:path");
 dotenv.config();
 
 const app = express();
 // This allows the app to parse JSON sent in request bodies
 app.use(express.json());
 
+// Add this to main.js
+app.use(express.static(path.join(__dirname, "public")));
+
 const server = http.createServer(app);
 const db = new AudoDB();
+
+// Serves index.html automatically
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 
 // Attach the Admin UI for debugging
 db.attachAdminUI(app, server);
@@ -25,7 +34,7 @@ db.attachAdminUI(app, server);
 app.post("/api/index/:table/:column", (req, res) => {
   const { table, column } = req.params;
   try {
-    const result = db.execute(`CREATE INDEX ON ${table} (${column})`);
+    const result = db.execute(`CREATE INDEX ON ${table} (${column});`);
     res.json({ success: true, message: result });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
@@ -38,9 +47,9 @@ app.post("/api/index/:table/:column", (req, res) => {
  */
 app.get("/api/reports/user-orders", (req, res) => {
   try {
-    // Demonstrating a JOIN query
+    db.execute("USE audo;"); // Ensure database is selected
     const result = db.execute(
-      "SELECT name, product, price FROM users JOIN orders ON users.id = orders.user_id"
+      "SELECT name, product, price FROM users JOIN orders ON users.id = orders.user_id;"
     );
     res.json(result);
   } catch (err) {
@@ -56,11 +65,21 @@ app.post("/api/orders", (req, res) => {
   const { id, user_id, product, price } = req.body;
   try {
     db.execute(
-      `INSERT INTO orders VALUES (${id}, ${user_id}, '${product}', ${price})`
+      `INSERT INTO orders VALUES (${id}, ${user_id}, '${product}', ${price});`
     );
     res.status(201).json({ success: true });
   } catch (err) {
     res.status(400).json({ error: err.message });
+  }
+});
+
+// Get all orders
+app.get("/api/orders", (req, res) => {
+  try {
+    const orders = db.execute("SELECT * FROM orders;");
+    res.json(orders);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -74,7 +93,7 @@ app.post("/api/users", (req, res) => {
   try {
     // Note the single quotes around string values in SQL
     const result = db.execute(
-      `INSERT INTO users VALUES (${id}, '${name}', '${email}')`
+      `INSERT INTO users VALUES (${id}, '${name}', '${email}');`
     );
     res.status(201).json({ success: true, message: result });
   } catch (err) {
@@ -85,20 +104,21 @@ app.post("/api/users", (req, res) => {
 // 2. READ: Get all users
 app.get("/api/users", (req, res) => {
   try {
-    const users = db.execute("SELECT * FROM users");
+    const users = db.execute("SELECT * FROM users;");
     res.json(users);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// 3. UPDATE: Change a user's name
+// 3. UPDATE: Change a user's details
 app.put("/api/users/:id", (req, res) => {
   const { id } = req.params;
-  const { name } = req.body;
+  const { name, email } = req.body; // Extract both name and email
   try {
+    // Corrected SQL to update multiple columns
     const result = db.execute(
-      `UPDATE users SET name = '${name}' WHERE id = ${id}`
+      `UPDATE users SET name = '${name}', email = '${email}' WHERE id = ${id};`
     );
     res.json({ success: true, message: result });
   } catch (err) {
@@ -110,7 +130,7 @@ app.put("/api/users/:id", (req, res) => {
 app.delete("/api/users/:id", (req, res) => {
   const { id } = req.params;
   try {
-    const result = db.execute(`DELETE FROM users WHERE id = ${id}`);
+    const result = db.execute(`DELETE FROM users WHERE id = ${id};`);
     res.json({ success: true, message: result });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
@@ -122,30 +142,35 @@ app.delete("/api/users/:id", (req, res) => {
 // ==========================================
 const initSchema = () => {
   try {
-    // Setup Users Table
-    try {
-      db.execute("SELECT * FROM users");
-    } catch {
-      db.execute("CREATE TABLE users (id INT, name TEXT, email TEXT)");
+    db.execute("CREATE DATABASE audo;");
+    db.execute("USE audo;");
 
-      // Seed initial data
-      db.execute(
-        "INSERT INTO users VALUES (1, 'Admin User', 'admin@audodb.com')"
-      );
+    // Check if the result is actually an error string
+    const checkTable = db.execute("SELECT * FROM users;");
+
+    if (typeof checkTable === "string" && checkTable.startsWith("Error")) {
+      console.log("Users table missing, creating now...");
+      db.execute("CREATE TABLE users (id INT, name TEXT, email TEXT);");
     }
 
-    // Setup Orders Table
-    try {
-      db.execute("SELECT * FROM orders");
-    } catch {
+    // Now check length safely
+    const users = db.execute("SELECT * FROM users;");
+    if (Array.isArray(users) && users.length === 0) {
       db.execute(
-        "CREATE TABLE orders (id INT, user_id INT, product TEXT, price INT)"
+        "INSERT INTO users VALUES (1, 'Bruce Audo', 'audo401@gmail.com');"
       );
+      console.log("Seed data inserted.");
     }
 
-    console.log("Database schema initialized.");
+    // Repeat for orders...
+    const checkOrders = db.execute("SELECT * FROM orders;");
+    if (typeof checkOrders === "string" && checkOrders.startsWith("Error")) {
+      db.execute(
+        "CREATE TABLE orders (id INT, user_id INT, product TEXT, price INT);"
+      );
+    }
   } catch (err) {
-    console.error("Schema setup error:", err.message);
+    console.error("Initialization failed:", err.message);
   }
 };
 

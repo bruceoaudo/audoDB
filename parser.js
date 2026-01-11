@@ -10,9 +10,23 @@ class Parser {
 
   parse(input) {
     this.tokens = this.lexer.tokenize(input);
+    console.log(this.tokens);
     this.currentTokenIndex = 0;
     this.currentToken = this.tokens[0];
     return this.parseStatement();
+  }
+
+  // Helper to handle both "column" and "table.column"
+  parseIdentifier() {
+    let name = this.expect(TokenType.IDENTIFIER).literal;
+
+    // If the next token is a PERIOD (.), we have a table.column situation
+    if (this.currentToken.type === TokenType.PERIOD) {
+      this.nextToken(); // consume '.'
+      const columnName = this.expect(TokenType.IDENTIFIER).literal;
+      name = `${name}.${columnName}`;
+    }
+    return name;
   }
 
   nextToken() {
@@ -68,9 +82,12 @@ class Parser {
       this.nextToken(); // Consume JOIN
       const joinTable = this.expect(TokenType.IDENTIFIER).literal;
       this.expect(TokenType.ON);
-      const leftCol = this.expect(TokenType.IDENTIFIER).literal;
+
+      // Use parseIdentifier() instead of expect(IDENTIFIER)
+      const leftCol = this.parseIdentifier();
       this.expect(TokenType.ASSIGN);
-      const rightCol = this.expect(TokenType.IDENTIFIER).literal;
+      const rightCol = this.parseIdentifier();
+
       joinClause = { table: joinTable, leftCol, rightCol };
     }
 
@@ -92,25 +109,29 @@ class Parser {
 
   parseColumnList() {
     const columns = [];
-
     if (this.currentToken.type === TokenType.ASTERISK) {
       columns.push("*");
       this.nextToken();
     } else {
-      columns.push(this.expect(TokenType.IDENTIFIER).literal);
+      // Use parseIdentifier()
+      columns.push(this.parseIdentifier());
 
       while (this.currentToken.type === TokenType.COMMA) {
         this.nextToken();
-        columns.push(this.expect(TokenType.IDENTIFIER).literal);
+        // Use parseIdentifier()
+        columns.push(this.parseIdentifier());
       }
     }
-
     return columns;
   }
 
   parseWhereClause() {
     this.expect(TokenType.WHERE);
-    const left = this.expect(TokenType.IDENTIFIER).literal;
+
+    // Use parseIdentifier() instead of expect(IDENTIFIER)
+    // This allows "WHERE users.id = 1"
+    const left = this.parseIdentifier();
+
     const operator = this.currentToken;
 
     if (
@@ -124,19 +145,21 @@ class Parser {
     this.nextToken();
 
     let right;
+    // Also allow the right side to be a table column (for cross-table filters)
     if (this.currentToken.type === TokenType.INTEGER) {
       right = parseInt(this.currentToken.literal);
+      this.nextToken();
     } else if (this.currentToken.type === TokenType.STRING) {
       right = this.currentToken.literal;
+      this.nextToken();
     } else if (this.currentToken.type === TokenType.IDENTIFIER) {
-      right = this.currentToken.literal;
+      // If the right side is an identifier, it could also have a dot!
+      right = this.parseIdentifier();
     } else {
       throw new Error(
         `Invalid value in WHERE clause: ${this.currentToken.type}`
       );
     }
-
-    this.nextToken();
 
     return {
       type: "WhereClause",

@@ -1,0 +1,68 @@
+{
+  "audo": {
+    "name": "audo",
+    "tables": {
+      "users": {
+        "name": "users",
+        "columns": [
+          {
+            "name": "id",
+            "type": "INT"
+          },
+          {
+            "name": "name",
+            "type": "TEXT"
+          },
+          {
+            "name": "email",
+            "type": "TEXT"
+          }
+        ],
+        "constraints": {
+          "primaryKey": null,
+          "foreignKeys": []
+        },
+        "rows": [
+          {
+            "id": 1,
+            "name": "Bruce Odoyo",
+            "email": "audo401@gmail.com"
+          }
+        ]
+      },
+      "orders": {
+        "name": "orders",
+        "columns": [
+          {
+            "name": "id",
+            "type": "INT"
+          },
+          {
+            "name": "user_id",
+            "type": "INT"
+          },
+          {
+            "name": "product",
+            "type": "TEXT"
+          },
+          {
+            "name": "price",
+            "type": "INT"
+          }
+        ],
+        "constraints": {
+          "primaryKey": null,
+          "foreignKeys": []
+        },
+        "rows": [
+          {
+            "id": 1,
+            "user_id": 1,
+            "product": "Iphone",
+            "price": 1000
+          }
+        ]
+      }
+    }
+  }
+}

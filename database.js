@@ -5,13 +5,13 @@ class Database {
   constructor() {
     this.databases = new Map();
     this.currentDatabase = null;
-    this.storagePath = path.join(__dirname, "engine_data.json");
-    this.logPath = path.join(__dirname, "history.log"); // Path for the log file
+    // Change __dirname to process.cwd()
+    this.storagePath = path.join(process.cwd(), "engine_data.json");
+    this.logPath = path.join(process.cwd(), "history.log");
 
     this.loadFromFile();
-    this.log("Database Engine Started."); // Initial log entry
+    this.log("Database Engine Started.");
   }
-
   // ================= LOGGING HELPER =================
 
   log(message) {

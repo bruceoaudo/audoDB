@@ -129,7 +129,7 @@ const TokenType = Object.freeze({
   // ============ PUNCTUATION ============
   COMMA: "COMMA", // , - Might be needed for column lists
   SEMICOLON: "SEMICOLON", // ; - Needed for: SELECT * FROM IDENTIFIER WHERE IDENTIFIER > 5;
-  // PERIOD: "PERIOD", // . - Commented: Not in the specific query
+  PERIOD: "PERIOD", // . - Commented: Not in the specific query
   // COLON: "COLON", // : - Commented: Not in the specific query
   // DOUBLE_COLON: "DOUBLE_COLON", // :: - Commented: Not in the specific query
   LEFT_PAREN: "LEFT_PAREN", // (
@@ -310,7 +310,7 @@ const Operators = Object.freeze({
   // Single character operators
   ",": TokenType.COMMA,
   ";": TokenType.SEMICOLON,
-  // ".": TokenType.PERIOD, // Commented: Not in TokenType
+  ".": TokenType.PERIOD,
   "(": TokenType.LEFT_PAREN,
   ")": TokenType.RIGHT_PAREN,
   // "[": TokenType.LEFT_BRACKET, // Commented: Not in TokenType
@@ -501,10 +501,6 @@ class Lexer {
 
   readIdentifier() {
     const start = this.position;
-    // Allow dot at the beginning for dot commands
-    if (this.ch === ".") {
-      this.readChar();
-    }
     while (this.isLetter(this.ch) || this.isDigit(this.ch) || this.ch === "_") {
       this.readChar();
     }
@@ -554,18 +550,29 @@ class Lexer {
 
     switch (this.ch) {
       case ".":
-        // For dot commands, we need to read the whole identifier starting with "."
-        const ident = this.readIdentifier();
-        const cmdType = TokenUtils.getDotCommandType(ident);
-        if (cmdType) {
-          token = new Token(cmdType, ident, line, col);
-        } else {
-          token = new Token(TokenType.ILLEGAL, ident, line, col);
+        // Peek at next char: if it's a letter, this is a dot command (.exit)
+        // ONLY if it's at the very start of a command.
+        // For "users.id", the "." must be its own token.
+        if (
+          this.position === 0 ||
+          this.input[this.position - 1] === " " ||
+          this.input[this.position - 1] === "\n"
+        ) {
+          if (this.isLetter(this.peekChar())) {
+            const ident = "." + this.readIdentifier();
+            const cmdType = TokenUtils.getDotCommandType(ident);
+            return new Token(cmdType || TokenType.ILLEGAL, ident, line, col);
+          }
         }
+
+        // Otherwise, it's a standard PERIOD operator for table.column
+        token = new Token(TokenType.PERIOD, ".", line, col);
+        this.readChar();
         return token;
       case "=":
         token = new Token(TokenType.ASSIGN, "=", line, col);
-        break;
+        this.readChar(); // Move past "="
+        return token;
       case "<":
         token = new Token(TokenType.LESS_THAN, "<", line, col);
         break;
@@ -598,18 +605,8 @@ class Lexer {
       default:
         if (this.isLetter(this.ch)) {
           const ident = this.readIdentifier();
-
-          // Check if it's a dot command
-          if (ident.startsWith(".")) {
-            const cmdType = TokenUtils.getDotCommandType(ident);
-            if (cmdType) {
-              token = new Token(cmdType, ident, line, col);
-            } else {
-              token = new Token(TokenType.ILLEGAL, ident, line, col);
-            }
-          }
           // Check if it's a keyword
-          else if (TokenUtils.isKeyword(ident.toUpperCase())) {
+          if (TokenUtils.isKeyword(ident.toUpperCase())) {
             const keywordType = TokenUtils.getKeywordType(ident.toUpperCase());
             token = new Token(keywordType, ident.toUpperCase(), line, col);
           }

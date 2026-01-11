@@ -9,7 +9,6 @@ class Interpreter {
 
   execute(input) {
     try {
-      console.log("Input:", input);
 
       // Create fresh lexer and parser for each input
       const lexer = new Lexer(input);
@@ -18,6 +17,7 @@ class Interpreter {
       const ast = parser.parse(input);
       return this.executeAST(ast);
     } catch (error) {
+      console.log({error})
       return `Error: ${error.message}`;
     }
   }

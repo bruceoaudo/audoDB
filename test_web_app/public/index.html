@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AudoDB Dashboard</title>
+    <link rel="stylesheet" href="index.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <aside class="sidebar">
+        <div class="logo">audo<span>DB</span></div>
+        <nav>
+          <ul>
+            <li class="active" onclick="showSection(event, 'users-section')">
+              Users
+            </li>
+            <li onclick="showSection(event, 'orders-section')">Orders</li>
+            <li onclick="showSection(event, 'reports-section')">Reports</li>
+          </ul>
+        </nav>
+        <div class="sidebar-footer">
+          <a href="/audodb-admin/" target="_blank" class="admin-btn"
+            >Open Admin REPL</a
+          >
+        </div>
+      </aside>
+
+      <main class="content">
+        <section id="users-section">
+          <header>
+            <h1>User Management</h1>
+            <button class="btn-primary" onclick="openAddUserModal()">
+              + Add User
+            </button>
+          </header>
+          <div class="card">
+            <table id="usersTable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="orders-section" class="hidden">
+          <header>
+            <h1>Order Processing</h1>
+            <button class="btn-primary" onclick="openModal('order-modal')">
+              + New Order
+            </button>
+          </header>
+          <div class="card">
+            <table id="ordersTable">
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>User ID</th>
+                  <th>Product</th>
+                  <th>Price</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="reports-section" class="hidden">
+          <header>
+            <h1>Reports</h1>
+          </header>
+          <div class="card">
+            <table id="reportsTable">
+              <thead>
+                <tr>
+                  <th>Customer Name</th>
+                  <th>Product</th>
+                  <th>Price</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="user-modal" class="modal hidden">
+      <div class="modal-content">
+        <h3>Add New User</h3>
+        <input type="number" id="userId" placeholder="User ID" />
+        <input type="text" id="userName" placeholder="Full Name" />
+        <input type="email" id="userEmail" placeholder="Email Address" />
+        <div class="modal-actions">
+          <button class="btn-cancel" onclick="closeModal('user-modal')">
+            Cancel
+          </button>
+          <button class="btn-primary" onclick="saveUser()">Save User</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="order-modal" class="modal hidden">
+      <div class="modal-content">
+        <h3>Place Order</h3>
+        <input type="number" id="orderId" placeholder="Order ID" />
+        <input type="number" id="orderUserId" placeholder="Customer ID" />
+        <input type="text" id="orderProduct" placeholder="Product Name" />
+        <input type="number" id="orderPrice" placeholder="Price" />
+        <div class="modal-actions">
+          <button class="btn-cancel" onclick="closeModal('order-modal')">
+            Cancel
+          </button>
+          <button class="btn-primary" onclick="saveOrder()">Place Order</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="index.js"></script>
+  </body>
+</html>

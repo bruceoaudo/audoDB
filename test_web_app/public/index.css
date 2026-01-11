@@ -1,0 +1,197 @@
+:root {
+  --bg: #f9fafb;
+  --sidebar: #111827;
+  --accent: #6ee7b7;
+  --text: #374151;
+  --white: #ffffff;
+  --border: #e5e7eb;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.container {
+  display: flex;
+  height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 260px;
+  background: var(--sidebar);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 1rem;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.logo span {
+  color: var(--accent);
+}
+
+nav ul {
+  list-style: none;
+  padding: 0;
+}
+nav li {
+  padding: 12px 20px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: 0.3s;
+  margin-bottom: 5px;
+}
+
+nav li.active,
+nav li:hover {
+  background: rgba(110, 231, 183, 0.1);
+  color: var(--accent);
+}
+
+.sidebar-footer {
+  margin-top: auto;
+}
+.admin-btn {
+  display: block;
+  text-align: center;
+  padding: 12px;
+  background: var(--accent);
+  color: var(--sidebar);
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+/* Main Content */
+.content {
+  flex: 1;
+  padding: 3rem;
+  overflow-y: auto;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.card {
+  background: var(--white);
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  text-align: left;
+  padding: 12px;
+  border-bottom: 2px solid var(--bg);
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.btn-primary {
+  background: #111827;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.btn-secondary {
+  background: white;
+  border: 1px solid var(--border);
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 400px;
+}
+
+.modal-content input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn-cancel {
+  background: transparent;
+  color: #6b7280; /* Gray color */
+  border: 1px solid var(--border);
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-cancel:hover {
+  background-color: #f3f4f6; /* Light gray on hover */
+  color: #111827; /* Darker text on hover */
+  border-color: #d1d5db;
+}
+
+/* Add this to your CSS for the table action buttons */
+#usersTable button {
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+#usersTable button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
