@@ -1,12 +1,21 @@
+/**
+ * @file dashboard.css
+ * @description Main stylesheet for the AudoDB Management Dashboard.
+ * Implements a clean, modern "Inter" font-based design with a fixed sidebar, 
+ * card-based content areas, and responsive modals.
+ */
+
 :root {
-  --bg: #f9fafb;
-  --sidebar: #111827;
-  --accent: #6ee7b7;
-  --text: #374151;
-  --white: #ffffff;
-  --border: #e5e7eb;
+  /* Color Palette Variables */
+  --bg: #f9fafb;      /* Main application background */
+  --sidebar: #111827; /* Dark sidebar background */
+  --accent: #6ee7b7;  /* Primary brand/action color (Mint) */
+  --text: #374151;    /* Primary body text color */
+  --white: #ffffff;   /* Pure white for cards/modals */
+  --border: #e5e7eb;  /* Soft border color for tables and inputs */
 }
 
+/* ============ GLOBAL RESET & BODY ============ */
 body {
   font-family: "Inter", sans-serif;
   margin: 0;
@@ -14,12 +23,19 @@ body {
   color: var(--text);
 }
 
+/**
+ * Main application wrapper using Flexbox to separate 
+ * the sidebar from the scrollable content area.
+ */
 .container {
   display: flex;
   height: 100vh;
 }
 
-/* Sidebar */
+/* ============ SIDEBAR NAVIGATION ============ */
+/**
+ * Sidebar container with fixed width and dark theme.
+ */
 .sidebar {
   width: 260px;
   background: var(--sidebar);
@@ -44,6 +60,10 @@ nav ul {
   list-style: none;
   padding: 0;
 }
+
+/**
+ * Navigation menu items with hover states.
+ */
 nav li {
   padding: 12px 20px;
   cursor: pointer;
@@ -61,6 +81,10 @@ nav li:hover {
 .sidebar-footer {
   margin-top: auto;
 }
+
+/**
+ * Call-to-action button for the Admin console.
+ */
 .admin-btn {
   display: block;
   text-align: center;
@@ -72,12 +96,16 @@ nav li:hover {
   font-weight: 600;
 }
 
-/* Main Content */
+/* ============ MAIN CONTENT AREA ============ */
+/**
+ * Main scrollable section where data tables and headers are rendered.
+ */
 .content {
   flex: 1;
   padding: 3rem;
   overflow-y: auto;
 }
+
 header {
   display: flex;
   justify-content: space-between;
@@ -85,6 +113,9 @@ header {
   margin-bottom: 2rem;
 }
 
+/**
+ * Generic container for grouping data (e.g., User tables, Order lists).
+ */
 .card {
   background: var(--white);
   padding: 1.5rem;
@@ -93,6 +124,7 @@ header {
   border: 1px solid var(--border);
 }
 
+/* ============ DATA TABLES ============ */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -105,11 +137,13 @@ th {
   color: #6b7280;
   font-size: 0.85rem;
 }
+
 td {
   padding: 12px;
   border-bottom: 1px solid var(--border);
 }
 
+/* ============ BUTTONS & ACTIONS ============ */
 .btn-primary {
   background: #111827;
   color: white;
@@ -118,6 +152,7 @@ td {
   border-radius: 6px;
   cursor: pointer;
 }
+
 .btn-secondary {
   background: white;
   border: 1px solid var(--border);
@@ -127,11 +162,15 @@ td {
   margin-right: 10px;
 }
 
+/* Utility to toggle section visibility in SPA logic */
 .hidden {
   display: none !important;
 }
 
-/* Modal */
+/* ============ MODAL SYSTEM ============ */
+/**
+ * Full-screen overlay for dialogs and forms.
+ */
 .modal {
   position: fixed;
   top: 0;
@@ -144,6 +183,9 @@ td {
   justify-content: center;
 }
 
+/**
+ * Centered modal card with standard form inputs.
+ */
 .modal-content {
   background: white;
   padding: 2rem;
@@ -166,6 +208,9 @@ td {
   gap: 10px;
 }
 
+/**
+ * Soft cancel button styling with transition effects.
+ */
 .btn-cancel {
   background: transparent;
   color: #6b7280; /* Gray color */
@@ -183,7 +228,7 @@ td {
   border-color: #d1d5db;
 }
 
-/* Add this to your CSS for the table action buttons */
+/* Specific styling for table action buttons (Edit/Delete) */
 #usersTable button {
   font-weight: 600;
   font-size: 0.85rem;

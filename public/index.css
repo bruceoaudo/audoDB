@@ -1,3 +1,11 @@
+/**
+ * @file style.css
+ * @description Defines the visual identity of the AudoDB Admin UI. 
+ * Implements a "Matrix-style" dark terminal theme with high-contrast 
+ * accents for results, errors, and data tables.
+ */
+
+/* ============ RESET & BASE STYLES ============ */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -10,6 +18,9 @@ body {
   font-family: "Courier New", monospace;
 }
 
+/* ============ REPL INPUT AREA ============ */
+/** * Layout for the active command line (prompt + input).
+ */
 .input-line {
   background-color: black;
   display: flex;
@@ -18,6 +29,8 @@ body {
   gap: 5px;
 }
 
+/** * Transparent input fields to simulate a native terminal environment.
+ */
 input {
   background-color: inherit;
   border: none;
@@ -35,7 +48,10 @@ input::selection {
 
 /* In your style.css file */
 
-/* Command history styling */
+/* ============ COMMAND HISTORY ============ */
+/** * Styling for commands already submitted.
+ * Uses a green tint (#6ee7b7) to distinguish from active input.
+ */
 .command-history input {
   color: #6ee7b7 !important;
   background-color: transparent !important;
@@ -44,7 +60,11 @@ input::selection {
   opacity: 0.8;
 }
 
-/* Result output styling */
+/* ============ OUTPUT MESSAGES ============ */
+
+/** * General query success output.
+ * Features a green left-border accent for positive feedback.
+ */
 .terminal-result {
   color: #d1d5db; /* Light gray */
   font-family: 'Courier New', monospace;
@@ -59,7 +79,9 @@ input::selection {
   overflow-x: auto;
 }
 
-/* Error output styling */
+/** * Critical error feedback.
+ * High visibility red (#f87171) for syntax or connection failures.
+ */
 .terminal-error {
   color: #f87171; /* Red */
   font-family: 'Courier New', monospace;
@@ -72,7 +94,8 @@ input::selection {
   word-wrap: break-word;
 }
 
-/* System messages */
+/** * Meta-information or connection status logs.
+ */
 .terminal-system {
   color: #9ca3af; /* Gray */
   font-style: italic;
@@ -80,7 +103,8 @@ input::selection {
   padding: 4px 0;
 }
 
-/* Welcome message */
+/** * Introductory header message shown on socket connection.
+ */
 .terminal-welcome {
   color: #60a5fa; /* Blue */
   font-weight: bold;
@@ -88,7 +112,10 @@ input::selection {
   padding: 8px 0;
 }
 
-/* Table-like output */
+/* ============ DATA VISUALIZATION ============ */
+
+/** * Preformatted text container within results.
+ */
 .terminal-result pre {
   margin: 0;
   padding: 8px;
@@ -98,7 +125,8 @@ input::selection {
   max-width: 100%;
 }
 
-/* Query results table */
+/** * Container-based table layout for query results.
+ */
 .result-table {
   display: table;
   width: 100%;
@@ -121,6 +149,9 @@ input::selection {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
+/** * Advanced SQL Data Table styling.
+ * Optimized for readability with specific column header underlining.
+ */
 .terminal-table {
   border-collapse: collapse;
   margin: 10px 0;
@@ -141,6 +172,8 @@ input::selection {
   border-bottom: 1px solid #333;
 }
 
+/** * Interactivity: Subtle row highlight on hover.
+ */
 .terminal-table tr:hover {
   background-color: rgba(110, 231, 183, 0.05);
 }

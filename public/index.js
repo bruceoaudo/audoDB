@@ -1,8 +1,20 @@
+/**
+ * @file script.js
+ * @description Frontend logic for the AudoDB Admin REPL.
+ * Handles real-time terminal interactions, dynamic DOM updates, and
+ * data visualization via HTML tables.
+ */
+
 document.addEventListener("DOMContentLoaded", () => {
   // Connect to Socket.io server
   const socket = io();
   const repl = document.getElementById("repl");
 
+  /**
+   * @event repl:keydown
+   * @description Global listener for the REPL container. Captures 'Enter' for command
+   * submission and 'Ctrl+L' for clearing the screen.
+   */
   // Use Event Delegation on the 'repl' container for keydown
   repl.addEventListener("keydown", function (event) {
     if (event.target.classList.contains("input-el") && event.key === "Enter") {
@@ -36,6 +48,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  /**
+   * @function deleteAllInputLines
+   * @description Clears the terminal buffer by removing all input lines,
+   * results, and error messages from the DOM.
+   */
   function deleteAllInputLines() {
     const allInputLines = document.querySelectorAll(".input-line");
     allInputLines.forEach((e) => e.remove());
@@ -45,6 +62,11 @@ document.addEventListener("DOMContentLoaded", () => {
     results.forEach((e) => e.remove());
   }
 
+  /**
+   * @function addNextInputLine
+   * @description Injects a new interactive prompt ("> ") into the terminal
+   * and ensures it receives focus for a seamless typing experience.
+   */
   function addNextInputLine() {
     const existingActive = document.querySelectorAll(
       ".input-el:not([disabled])"
@@ -70,6 +92,14 @@ document.addEventListener("DOMContentLoaded", () => {
     inputDiv.scrollIntoView({ behavior: "smooth" });
   }
 
+  /**
+   * @function displayCommandHistory
+   * @description Replaces the active input field with a read-only version
+   * to preserve the record of entered commands.
+   * @param {string} command - The command text entered by the user.
+   * @param {HTMLElement} inputElement - The current input element to be replaced.
+   * @returns {HTMLElement} The new history div.
+   */
   function displayCommandHistory(command, inputElement) {
     const parentDiv = inputElement.parentElement;
 
@@ -92,6 +122,13 @@ document.addEventListener("DOMContentLoaded", () => {
     return historyDiv;
   }
 
+  /**
+   * @function displayResult
+   * @description Formats and renders the engine's response. Handles plain text,
+   * JSON objects, and converts array data into stylized HTML tables.
+   * @param {any} result - The data returned from the server.
+   * @param {boolean} isError - Flag to determine if result should be styled as an error.
+   */
   function displayResult(result, isError = false) {
     const resultDiv = document.createElement("div");
     resultDiv.className = isError ? "terminal-error" : "terminal-result";
@@ -151,6 +188,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ============ SOCKET.IO EVENT LISTENERS ============
 
+  /** @listens socket:welcome */
   socket.on("welcome", (data) => {
     deleteAllInputLines();
     const messageElement = document.createElement("div");
@@ -160,6 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
     addNextInputLine();
   });
 
+  /** @listens socket:command_result */
   socket.on("command_result", (data) => {
     if (data.success) {
       displayResult(data.result, false);
@@ -168,10 +207,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  /** @listens socket:command_error */
   socket.on("command_error", (data) => {
     displayResult(`Error: ${data.error || "An unknown error occurred"}`, true);
   });
 
+  /**
+   * @function handleSystemMessage
+   * @description Renders system-level logs (connectivity alerts, status updates)
+   * directly to the REPL.
+   */
   const handleSystemMessage = (msg, isError = false) => {
     const div = document.createElement("div");
     div.className = isError ? "terminal-error" : "terminal-system";
@@ -183,10 +228,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  /** @listens socket:user_disconnected */
   socket.on("user_disconnected", (data) => handleSystemMessage(data.message));
+  /** @listens socket:connect_error */
   socket.on("connect_error", () =>
     handleSystemMessage("Connection error. Please refresh.", true)
   );
+  /** @listens socket:disconnect */
   socket.on("disconnect", () =>
     handleSystemMessage("Disconnected. Reconnecting...", true)
   );

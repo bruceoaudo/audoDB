@@ -1,7 +1,16 @@
 const fs = require("fs");
 const path = require("path");
 
+/**
+ * @class Database
+ * @description Core engine for managing in-memory databases, handling table operations,
+ * indexing, and JSON file persistence.
+ */
 class Database {
+  /**
+   * @constructor
+   * @description Initializes the database engine, sets up storage paths, and loads existing data.
+   */
   constructor() {
     this.databases = new Map();
     this.currentDatabase = null;
@@ -14,6 +23,11 @@ class Database {
   }
   // ================= LOGGING HELPER =================
 
+  /**
+   * @method log
+   * @description Appends a timestamped message to the history.log file.
+   * @param {string} message - The message to log.
+   */
   log(message) {
     const timestamp = new Date().toISOString();
     const logEntry = `[${timestamp}] ${message}\n`;
@@ -26,6 +40,10 @@ class Database {
 
   // ================= PERSISTENCE HELPERS =================
 
+  /**
+   * @method saveToFile
+   * @description Serializes the current state of all databases and tables to engine_data.json.
+   */
   saveToFile() {
     try {
       const dataToSave = {};
@@ -47,6 +65,10 @@ class Database {
     }
   }
 
+  /**
+   * @method loadFromFile
+   * @description Reads engine_data.json and reconstructs the database Map and table structures.
+   */
   loadFromFile() {
     try {
       if (!fs.existsSync(this.storagePath)) return;
@@ -70,6 +92,13 @@ class Database {
 
   // ================= DATABASE METHODS =================
 
+  /**
+   * @method projectColumns
+   * @description Filters rows to only include the specified columns (SELECT projection).
+   * @param {Array<Object>} data - The dataset to process.
+   * @param {string[]} columns - Array of column names to project.
+   * @returns {Array<Object>} Projected dataset.
+   */
   projectColumns(data, columns) {
     if (columns[0] === "*") return data;
     return data.map((row) => {
@@ -82,6 +111,13 @@ class Database {
     });
   }
 
+  /**
+   * @method createIndex
+   * @description Creates a lookup Map for a specific column to optimize search performance.
+   * @param {string} tableName - The name of the table.
+   * @param {string} columnName - The column to index.
+   * @returns {string} Confirmation message.
+   */
   createIndex(tableName, columnName) {
     if (!this.currentDatabase) throw new Error("No database selected");
     const table = this.currentDatabase.tables.get(tableName);
@@ -101,6 +137,12 @@ class Database {
     return `Index created on ${tableName}(${normalizedCol})`;
   }
 
+  /**
+   * @method createDatabase
+   * @description Creates a new database instance.
+   * @param {string} name - The name of the database.
+   * @returns {string} Confirmation message.
+   */
   createDatabase(name) {
     if (this.databases.has(name))
       throw new Error(`Database '${name}' already exists`);
@@ -110,6 +152,12 @@ class Database {
     return `Database '${name}' created successfully`;
   }
 
+  /**
+   * @method useDatabase
+   * @description Switches the current active database context.
+   * @param {string} name - The name of the database to use.
+   * @returns {string} Confirmation message.
+   */
   useDatabase(name) {
     if (!this.databases.has(name))
       throw new Error(`Database '${name}' does not exist`);
@@ -118,11 +166,24 @@ class Database {
     return `Using database '${name}'`;
   }
 
+  /**
+   * @method showDatabases
+   * @description Lists all available databases.
+   * @returns {string} Newline-separated database names.
+   */
   showDatabases() {
     const dbNames = Array.from(this.databases.keys());
     return dbNames.length === 0 ? "No databases found" : dbNames.join("\n");
   }
 
+  /**
+   * @method createTable
+   * @description Creates a new table with defined columns and constraints.
+   * @param {string} name - Table name.
+   * @param {Object[]} columns - Array of column definition objects.
+   * @param {Object} [constraints={}] - Primary and Foreign key constraints.
+   * @returns {string} Confirmation message.
+   */
   createTable(name, columns, constraints = {}) {
     if (!this.currentDatabase) throw new Error("No database selected");
     const normalizedColumns = columns.map((col) => ({
@@ -154,12 +215,24 @@ class Database {
     return `Table '${name}' created successfully.`;
   }
 
+  /**
+   * @method showTables
+   * @description Lists all tables in the current active database.
+   * @returns {string} Newline-separated table names.
+   */
   showTables() {
     if (!this.currentDatabase) throw new Error("No database selected");
     const tableNames = Array.from(this.currentDatabase.tables.keys());
     return tableNames.length === 0 ? "No tables found" : tableNames.join("\n");
   }
 
+  /**
+   * @method insertIntoTable
+   * @description Inserts a new row into a table after validating constraints (PK and FK).
+   * @param {string} tableName - Target table.
+   * @param {Array} values - Array of values to insert.
+   * @returns {string} Confirmation message.
+   */
   insertIntoTable(tableName, values) {
     if (!this.currentDatabase) throw new Error("No database selected");
     const table = this.currentDatabase.tables.get(tableName);
@@ -190,6 +263,15 @@ class Database {
     return "1 row inserted";
   }
 
+  /**
+   * @method selectFromTable
+   * @description Retrieves rows from a table with support for JOINs and WHERE clauses.
+   * @param {string} tableName - Source table.
+   * @param {string[]} columns - Columns to return.
+   * @param {Object} [whereClause] - Filtering logic.
+   * @param {Object} [joinClause] - Joining logic.
+   * @returns {Array<Object>} Resulting dataset.
+   */
   selectFromTable(tableName, columns, whereClause, joinClause) {
     if (!this.currentDatabase) throw new Error("No database selected");
     const leftTable = this.currentDatabase.tables.get(tableName);
@@ -230,6 +312,14 @@ class Database {
     return this.projectColumns(data, columns);
   }
 
+  /**
+   * @method updateTable
+   * @description Updates existing rows in a table based on a WHERE condition.
+   * @param {string} tableName - Target table.
+   * @param {Object} updates - Key-value pairs of updates.
+   * @param {Object} [whereClause] - Condition for which rows to update.
+   * @returns {string} Number of rows updated.
+   */
   updateTable(tableName, updates, whereClause = null) {
     if (!this.currentDatabase) throw new Error("No database selected");
     const table = this.currentDatabase.tables.get(tableName);
@@ -268,6 +358,13 @@ class Database {
     return `${updatedCount} row(s) updated`;
   }
 
+  /**
+   * @method deleteFromTable
+   * @description Removes rows from a table based on a WHERE condition.
+   * @param {string} tableName - Target table.
+   * @param {Object} [whereClause] - Condition for which rows to delete.
+   * @returns {string} Number of rows deleted.
+   */
   deleteFromTable(tableName, whereClause = null) {
     if (!this.currentDatabase) throw new Error("No database selected");
     const table = this.currentDatabase.tables.get(tableName);

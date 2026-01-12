@@ -1,4 +1,9 @@
 // Since JavaScript doesn't have enums, we'll use an Object.freeze() pattern
+/**
+ * @constant TokenType
+ * @description An enumeration of all supported token types within the AudoDB engine,
+ * including SQL keywords, punctuation, operators, and literals.
+ */
 const TokenType = Object.freeze({
   // ============ KEYWORDS ============
   // Data Definition Language (DDL)
@@ -233,6 +238,10 @@ const TokenType = Object.freeze({
 });
 
 // Helper object to map string keywords to TokenTypes
+/**
+ * @constant Keywords
+ * @description Map of SQL keyword strings to their respective TokenType.
+ */
 const Keywords = Object.freeze({
   // SQL Keywords - ONLY KEEPING WHAT'S IN TokenType
   CREATE: TokenType.CREATE,
@@ -295,6 +304,10 @@ const Keywords = Object.freeze({
 });
 
 // Dot commands mapping - ONLY KEEPING WHAT'S IN TokenType
+/**
+ * @constant DotCommands
+ * @description Map of REPL dot-commands to their respective TokenType.
+ */
 const DotCommands = Object.freeze({
   ".exit": TokenType.DOT_EXIT,
   //".help": TokenType.DOT_HELP,
@@ -306,6 +319,10 @@ const DotCommands = Object.freeze({
 });
 
 // Operators mapping - ONLY KEEPING WHAT'S IN TokenType
+/**
+ * @constant Operators
+ * @description Map of punctuation and operator characters to their respective TokenType.
+ */
 const Operators = Object.freeze({
   // Single character operators
   ",": TokenType.COMMA,
@@ -347,8 +364,19 @@ const Operators = Object.freeze({
   // "/*": "COMMENT_START_MULTI", // Commented: Not needed
 });
 
-// Token class implementation
+/**
+ * @class Token
+ * @description Represents a single atomic unit of SQL syntax with its type,
+ * literal value, and source location.
+ */
 class Token {
+  /**
+   * @constructor
+   * @param {string} type - The TokenType.
+   * @param {string} literal - The raw string value.
+   * @param {number} line - Line number in source.
+   * @param {number} column - Column number in source.
+   */
   constructor(type, literal, line = 1, column = 1) {
     this.type = type;
     this.literal = literal;
@@ -356,23 +384,28 @@ class Token {
     this.column = column;
   }
 
+  /** @returns {string} String representation for debugging. */
   toString() {
     return `Token(${this.type}, "${this.literal}", line: ${this.line}, col: ${this.column})`;
   }
 
+  /** @returns {boolean} True if the token is a SQL keyword. */
   isKeyword() {
     // Check if this token type is in the Keywords mapping values
     return Object.values(Keywords).includes(this.type);
   }
 
+  /** @returns {boolean} True if the token is an operator or punctuation. */
   isOperator() {
     return Object.values(Operators).includes(this.type);
   }
 
+  /** @returns {boolean} True if the token is a REPL command. */
   isDotCommand() {
     return Object.values(DotCommands).includes(this.type);
   }
 
+  /** @returns {boolean} True if the token is a constant literal value. */
   isLiteral() {
     const literals = [
       TokenType.STRING,
@@ -387,6 +420,7 @@ class Token {
     return literals.includes(this.type);
   }
 
+  /** @returns {boolean} True if the token represents a supported data type. */
   isDataType() {
     const dataTypes = [
       TokenType.INT,
@@ -403,12 +437,16 @@ class Token {
     return dataTypes.includes(this.type);
   }
 
+  /** @param {Token} otherToken - Token to compare against. */
   equals(otherToken) {
     return this.type === otherToken.type && this.literal === otherToken.literal;
   }
 }
 
-// Helper functions
+/**
+ * @constant TokenUtils
+ * @description Utility functions for identifying token categories and formatting output.
+ */
 const TokenUtils = {
   // Check if a string is a keyword
   isKeyword: (str) => {
@@ -447,7 +485,15 @@ const TokenUtils = {
   },
 };
 
+/**
+ * @class Lexer
+ * @description Scans raw input text and converts it into a stream of Token objects.
+ */
 class Lexer {
+  /**
+   * @constructor
+   * @param {string} input - Raw SQL or command text.
+   */
   constructor(input) {
     this.input = input;
     this.position = 0;
@@ -458,6 +504,9 @@ class Lexer {
     this.readChar(); // This should read the first character
   }
 
+  /** * @method readChar
+   * @description Reads the next character and updates positions and line/column counts.
+   */
   readChar() {
     if (this.readPosition >= this.input.length) {
       this.ch = "\0"; // EOF character
@@ -481,6 +530,7 @@ class Lexer {
     }
   }
 
+  /** @returns {string} The next character without advancing the position. */
   peekChar() {
     if (this.readPosition >= this.input.length) {
       return "\0";
@@ -488,6 +538,7 @@ class Lexer {
     return this.input[this.readPosition];
   }
 
+  /** @method skipWhitespace */
   skipWhitespace() {
     while (
       this.ch === " " ||
@@ -499,6 +550,7 @@ class Lexer {
     }
   }
 
+  /** @returns {string} A string representing a multi-character identifier. */
   readIdentifier() {
     const start = this.position;
     while (this.isLetter(this.ch) || this.isDigit(this.ch) || this.ch === "_") {
@@ -507,6 +559,7 @@ class Lexer {
     return this.input.slice(start, this.position);
   }
 
+  /** @returns {string} A string representing a numeric literal. */
   readNumber() {
     const start = this.position;
     while (this.isDigit(this.ch)) {
@@ -515,6 +568,7 @@ class Lexer {
     return this.input.slice(start, this.position);
   }
 
+  /** @returns {string} The content of a quoted string. */
   readString() {
     const quote = this.ch;
     const start = this.position + 1; // Skip opening quote
@@ -541,6 +595,11 @@ class Lexer {
     return ch >= "0" && ch <= "9";
   }
 
+  /**
+   * @method nextToken
+   * @description Identifies the next token in the stream and returns it.
+   * @returns {Token}
+   */
   nextToken() {
     this.skipWhitespace();
 
@@ -630,6 +689,10 @@ class Lexer {
     return token;
   }
 
+  /** * @method tokenize
+   * @description Processes the entire input and returns an array of all tokens.
+   * @returns {Token[]}
+   */
   tokenize() {
     const tokens = [];
     let token = this.nextToken();

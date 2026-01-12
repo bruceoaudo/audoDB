@@ -3,7 +3,17 @@ const express = require("express");
 const path = require("path");
 const socketIO = require("socket.io");
 
+/**
+ * @class AudoDB
+ * @description The primary entry point for the AudoDB ecosystem. It provides both a
+ * programmatic API for backend integration and an automated Admin UI via Socket.io
+ * and Express.
+ */
 class AudoDB {
+  /**
+   * @constructor
+   * @description Initializes the core database interpreter instance.
+   */
   constructor() {
     this.interpreter = new Interpreter();
   }
@@ -11,6 +21,9 @@ class AudoDB {
   /**
    * Programmatic API:
    * Allows developers to run SQL directly in their backend code.
+   * * @method execute
+   * @param {string} sql - The SQL query string to execute.
+   * @returns {any} The processed result from the database engine.
    */
   execute(sql) {
     // You can add internal logging here if you want to track API calls
@@ -20,11 +33,17 @@ class AudoDB {
   /**
    * Admin UI Plugin:
    * Attaches the Socket.io listeners and serves the REPL frontend.
+   * * @method attachAdminUI
+   * @description Configures Socket.io for real-time communication, sets up
+   * static middleware for the admin dashboard, and handles REPL commands.
+   * @param {express.Application} app - An Express application instance.
+   * @param {http.Server} server - The HTTP server instance to attach Socket.io to.
    */
   attachAdminUI(app, server) {
     const io = socketIO(server);
 
     // Check if server is already listening, otherwise wait for it
+    /** @private */
     const logUrl = () => {
       const addr = server.address();
       const port = addr

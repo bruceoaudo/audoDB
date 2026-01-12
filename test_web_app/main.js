@@ -1,3 +1,9 @@
+/**
+ * @file main.js
+ * @description The main server application. Configures Express, establishes REST endpoints
+ * for the AudoDB engine, and initializes the database schema with seed data.
+ */
+
 const express = require("express");
 const http = require("http");
 const AudoDB = require("audodb");
@@ -13,6 +19,10 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 const server = http.createServer(app);
+/**
+ * @constant db
+ * @description Instance of the AudoDB engine used across all API routes.
+ */
 const db = new AudoDB();
 
 // Serves index.html automatically
@@ -21,6 +31,9 @@ app.get("/", (req, res) => {
 });
 
 // Attach the Admin UI for debugging
+/**
+ * @description Activates the real-time Socket.io Admin REPL at /audodb-admin.
+ */
 db.attachAdminUI(app, server);
 
 // ==========================================
@@ -29,7 +42,8 @@ db.attachAdminUI(app, server);
 
 /**
  * 1. CREATE INDEX
- * Speed up lookups on a specific column.
+ * @route POST /api/index/:table/:column
+ * @description Speed up lookups on a specific column by creating a B-Tree or Hash index.
  */
 app.post("/api/index/:table/:column", (req, res) => {
   const { table, column } = req.params;
@@ -43,7 +57,8 @@ app.post("/api/index/:table/:column", (req, res) => {
 
 /**
  * 2. JOIN: Users and Orders
- * Combines data where users.id = orders.user_id
+ * @route GET /api/reports/user-orders
+ * @description Combines data where users.id = orders.user_id using a standard SQL JOIN.
  */
 app.get("/api/reports/user-orders", (req, res) => {
   try {
@@ -59,7 +74,8 @@ app.get("/api/reports/user-orders", (req, res) => {
 
 /**
  * 3. CREATE ORDER
- * Simple endpoint to populate the second table for the join
+ * @route POST /api/orders
+ * @description Simple endpoint to populate the second table for the join.
  */
 app.post("/api/orders", (req, res) => {
   const { id, user_id, product, price } = req.body;
@@ -73,7 +89,10 @@ app.post("/api/orders", (req, res) => {
   }
 });
 
-// Get all orders
+/**
+ * @route GET /api/orders
+ * @description Retrieves all records from the orders table.
+ */
 app.get("/api/orders", (req, res) => {
   try {
     const orders = db.execute("SELECT * FROM orders;");
@@ -87,7 +106,10 @@ app.get("/api/orders", (req, res) => {
 // CRUD ENDPOINTS FOR FRONTEND
 // ==========================================
 
-// 1. CREATE: Add a new user
+/**
+ * @route POST /api/users
+ * @description CREATE: Inserts a new user record into the database.
+ */
 app.post("/api/users", (req, res) => {
   const { id, name, email } = req.body;
   try {
@@ -101,7 +123,10 @@ app.post("/api/users", (req, res) => {
   }
 });
 
-// 2. READ: Get all users
+/**
+ * @route GET /api/users
+ * @description READ: Fetches all users stored in the AudoDB instance.
+ */
 app.get("/api/users", (req, res) => {
   try {
     const users = db.execute("SELECT * FROM users;");
@@ -111,7 +136,10 @@ app.get("/api/users", (req, res) => {
   }
 });
 
-// 3. UPDATE: Change a user's details
+/**
+ * @route PUT /api/users/:id
+ * @description UPDATE: Modifies existing user details based on ID.
+ */
 app.put("/api/users/:id", (req, res) => {
   const { id } = req.params;
   const { name, email } = req.body; // Extract both name and email
@@ -126,7 +154,10 @@ app.put("/api/users/:id", (req, res) => {
   }
 });
 
-// 4. DELETE: Remove a user
+/**
+ * @route DELETE /api/users/:id
+ * @description DELETE: Removes a user from the table.
+ */
 app.delete("/api/users/:id", (req, res) => {
   const { id } = req.params;
   try {
@@ -140,6 +171,11 @@ app.delete("/api/users/:id", (req, res) => {
 // ==========================================
 // INITIALIZATION - Run this once to setup table
 // ==========================================
+/**
+ * @function initSchema
+ * @description Checks for the existence of required databases and tables.
+ * Creates them and inserts seed data if they are missing.
+ */
 const initSchema = () => {
   try {
     db.execute("CREATE DATABASE audo;");
